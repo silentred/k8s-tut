@@ -121,7 +121,7 @@ traefik 可以监听 etcd 中注册的 ingress 的变化，根据 ingress 资源
 
 ## 日志收集
 
-官方有推荐的Log系统: cAdvisor 和 Heapster 
+官方有推荐的Log系统: cAdvisor 和 Heapster. 
 我比较偏爱 ELK, 主要是生态比较好。有两种方式应用：
 
 1. 第一种是每个Pod都多加一个 sidecar - Filebeat， 在每个后端服务配置文件中指定本地log的路径，在filebeat的配置中指定这个路径，实现日志收集
@@ -133,4 +133,11 @@ traefik 可以监听 etcd 中注册的 ingress 的变化，根据 ingress 资源
 ## 第一个服务
 
 终于到了这个紧张刺激的环节。
+
+源文件在 hello-app 目录下，一个简单的 http service, 主要包含两个路由:
+
+1. /metrics 返回 prometheus 抓取的数据格式
+2. / 其他Path，返回一个随机id和URI
+
+log 日志输入 /tmp/hello-app.log 
 

@@ -1,0 +1,59 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hello-ingress
+  annotations:
+    # pay attension; set this annotation if you use prefix path
+    traefik.frontend.rule.type: pathprefixstrip
+spec:
+  rules:
+  - host: www.hello.local
+    http:
+      paths:
+      - path: /v1
+        backend:
+          serviceName: hello
+          servicePort: 9090
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  # 需要确定 /metrics 路径的返回符合prometheus的抓取数据格式, 否则prometheus会报错
+  annotations:
+    prometheus.io/scrape: 'true'
+  labels:
+    app: hello
+  name: hello
+spec:
+  ports:
+  - port: 9090
+  selector:
+    run: hello
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hello
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: hello
+    spec:
+      containers:
+      - name: hello
+        image: silentred/hello-app:latest
+        # livenessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 9090
+        #   initialDelaySeconds: 3
+        #   periodSeconds: 3
+        ports:
+        - containerPort: 9090
+
