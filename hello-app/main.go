@@ -2,31 +2,64 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"math/rand"
+	"net/http"
 
-	"github.com/labstack/echo"
-	"github.com/silentred/kassadin"
-	"github.com/silentred/kassadin/filter"
+	"os"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
-var id int
+var (
+	id int
+
+	reqCount = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "req_count",
+		Help: "total count of request",
+	}, []string{"service"})
+
+	reqDuration = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Name: "req_duration_us",
+		Help: "latency of request in microsecond",
+	}, []string{"service"})
+)
 
 func main() {
 	id = rand.Int()
-	app := kassadin.NewApp()
-	app.RegisterRouteHook(route)
-	app.Start()
+
+	// log
+	logFile, err := os.Create("/tmp/hello-app.log")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(logFile)
+
+	// prom
+	prometheus.MustRegister(reqCount)
+	prometheus.MustRegister(reqDuration)
+	http.Handle("/metrics", prometheus.Handler())
+
+	// http
+	http.Handle("/", metricsMiddleware(helloWorld))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func route(app *kassadin.App) error {
-	h := filter.GetPrometheusLogHandler()
-	app.Route.GET("/metrics", h)
+func metricsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t := time.Now()
 
-	app.Route.GET("/hello*", helloWorld, filter.Recover(), filter.Logger(app.DefaultLogger()), filter.Metrics())
-	return nil
+		next(w, r)
+
+		duration := float64(time.Now().Sub(t).Nanoseconds()) / 1000
+		reqCount.WithLabelValues("http").Add(1)
+		reqDuration.WithLabelValues("http").Observe(duration)
+	})
 }
 
-func helloWorld(ctx echo.Context) error {
-	return ctx.String(200, fmt.Sprintf("ID:%d path: %s", id, ctx.Request().URL.Path))
+func helloWorld(w http.ResponseWriter, r *http.Request) {
+	log.Printf("ID:%d time:%d", id, time.Now().Unix())
+	fmt.Fprintf(w, "ID:%d path:%s", id, r.URL.Path)
 }
