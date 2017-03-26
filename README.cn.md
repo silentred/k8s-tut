@@ -76,9 +76,61 @@ kubectl get pods --all-namespaces | grep dns
 
 ## 监控
 
+在部署之前，我们需要对两台node标记角色，k8s是通过label来自定义各个资源的类型的。
+首先确定两台node的name, 通过 `kubectl get nodes`来查看，之后挑选其中一台作为前端机器(frontend).
+
+```
+kubectl label node centos-2gb-sfo2-node1 role=frontend
+```
+这里把centos-2gb-sfo2-node1换成你的 node name
+
 ### Prometheus
 
+应用 monitor 目录下的两个配置文件，如下
 
+```
+kubectl apply -f prometheus.config.yaml
+kubectl apply -f prometheus.deploy.yaml
+```
+
+接下来打开 http://front-end-ip:30900 就能看到 prometheus 的界面
 
 ### Grafana
+
+```
+kubectl apply -f grafana.deploy.yaml
+```
+
+打开 http://front-end-ip:30200 就能看到 grafana 的界面.
+
+1. 还需要添加一个 Data Source. 选择 Promethues, 地址填上:
+	http://promethues:9090
+	因为有kube-dns，所以这样就能访问 pod 中的 service
+
+2. 添加模板，内容为  grafana.config.k8s.json, 这个模板是针对 k8s 集群的仪表模板，添加时选择对应的 Data Source，然后就能看到效果。
+
+## 网关
+
+类似上面的步骤，配置文件在 gateway 目录下，运行
+```
+kubectl apply -f traefik.yaml
+```
+这样在 http://front-end-ip:30088 能看到 网关的 dashboard。
+
+traefik 可以监听 etcd 中注册的 ingress 的变化，根据 ingress 资源来自动配置路由， 下面会有具体的示例。最后的效果是， 后端服务的配置文件中定义他自己的 服务domain 和 prefix, traefik会自动添加这个路由, 这样就可以通过gateway来访问后端服务了。
+
+## 日志收集
+
+官方有推荐的Log系统: cAdvisor 和 Heapster 
+我比较偏爱 ELK, 主要是生态比较好。有两种方式应用：
+
+1. 第一种是每个Pod都多加一个 sidecar - Filebeat， 在每个后端服务配置文件中指定本地log的路径，在filebeat的配置中指定这个路径，实现日志收集
+
+2. 还有一种是Filebeat作为 DaemonSet 运行在每台机器, 这样每台机器只有一个 filebeat 运行，监听一个指定目录；后端服务约定好log都写入这个目录的子目录中，这样也能达到收集效果。
+
+我比较推荐第二种方式，工作量稍微小一些。
+
+## 第一个服务
+
+终于到了这个紧张刺激的环节。
 
