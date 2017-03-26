@@ -9,7 +9,7 @@ This tutorial will show you how to deploy your microservices in the Kubernetes p
 5. Setting up logging collector
 6. Deploy your first app
 
-[中文版本](README.md)
+[中文版本](README.cn.md)
 
 ## Setting up a K8S cluster with kubeadm
 
