@@ -1,0 +1,33 @@
+# 需要修改
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+spec:
+  ports:
+  - port: 5044
+    targetPort: beats
+  selector:
+    type: logstash
+  clusterIP: None
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: logstash
+spec:
+  template:
+    metadata:
+      labels:
+        type: logstash
+    spec:
+      containers:
+      - image: logstash:2.3
+        name: logstash
+        ports:
+        - containerPort: 5044
+          name: beats
+        command:
+        - logstash
+        - '-e'
+        - 'input { beats { port => 5044 } } output { stdout { } }'

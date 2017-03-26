@@ -1,0 +1,9 @@
+[app]
+runMode = "dev"
+name = "hello-svc"
+port = 8080
+
+logProvider = "file"
+logPath = "/tmp"
+logRotate = true
+logRotateType = "day"
