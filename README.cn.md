@@ -30,7 +30,6 @@
 开始部署步骤:
 
 1. 在 Digital Ocean 中开三台机器, centos 7，建议2C2G，按小时计费用不了多少钱，用完就销毁。 如果还没有注册账号，并且觉得本文对你有帮助，可以用我的 referral link 注册，可以得到 10美金, [链接](https://m.do.co/c/821db079aed2)
-
 2. 登录三台机器，安装必要组件.
 	```
 	yum clean
@@ -89,8 +88,8 @@ kubectl label node centos-2gb-sfo2-node1 role=frontend
 应用 monitor 目录下的两个配置文件，如下
 
 ```
-kubectl apply -f prometheus.config.yaml
-kubectl apply -f prometheus.deploy.yaml
+kubectl create -f prometheus.config.yaml
+kubectl create -f prometheus.deploy.yaml
 ```
 
 接下来打开 http://front-end-ip:30900 就能看到 prometheus 的界面
@@ -98,7 +97,7 @@ kubectl apply -f prometheus.deploy.yaml
 ### Grafana
 
 ```
-kubectl apply -f grafana.deploy.yaml
+kubectl create -f grafana.deploy.yaml
 ```
 
 打开 http://front-end-ip:30200 就能看到 grafana 的界面.
@@ -113,7 +112,7 @@ kubectl apply -f grafana.deploy.yaml
 
 类似上面的步骤，配置文件在 gateway 目录下，运行
 ```
-kubectl apply -f traefik.yaml
+kubectl create -f traefik.yaml
 ```
 这样在 http://front-end-ip:30088 能看到 网关的 dashboard。
 
@@ -139,5 +138,25 @@ traefik 可以监听 etcd 中注册的 ingress 的变化，根据 ingress 资源
 1. /metrics 返回 prometheus 抓取的数据格式
 2. / 其他Path，返回一个随机id和URI
 
-log 日志输入 /tmp/hello-app.log 
+log 日志输入 /tmp/hello-app.log ;
+
+想要达到的效果是：
+1. 配置文件中配好路由，自动注册到 gateway
+2. promethues 自动发现服务，抓取 http://hello:8080/metrics 的监控数据
+3. 日志能够自动收集
+
+app 的配置文件位于 hello-app 目录下, 运行：
+```
+kubectl create -f hello.yaml
+```
+
+接着去 gateway 和 prometheus 的 dashboard 看下，会发现服务已经被发现;
+再测试一下通过gateway是否能访问到 hello-app 这个服务:
+
+```
+curl http://gateway-ip:30087/v1/go/micro -H 'Host: www.hello.local'
+#结果为：
+
+```
+
 
