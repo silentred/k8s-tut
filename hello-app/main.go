@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"math/rand"
 	"net/http"
-
-	"os"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
