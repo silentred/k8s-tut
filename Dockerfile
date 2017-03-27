@@ -1,10 +1,9 @@
-FROM golang:alpine 
+FROM ubuntu
 
-RUN mkdir /data
-ADD hello-app /data
-RUN cd /data/hello-app
-RUN go build -o hello .
-WORKDIR /data/hello-app
+RUN mkdir -p /data
+ADD hello /data
+WORKDIR /data
+
 EXPOSE 8080
 
-ENTRYPOINT ["/data/hello-app/hello"]  
+ENTRYPOINT ["/data/hello"]

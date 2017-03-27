@@ -170,9 +170,9 @@ kubectl create -f hello.yaml
 再测试一下通过gateway是否能访问到 hello-app 这个服务:
 
 ```
-curl http://gateway-ip:30087/v1/go/micro -H 'Host: www.hello.local'
+curl http://front-end-ip:30087/v1/hello -H 'Host: www.hello.local'
 #结果为：
-
+ID:5577006791947779410 path:/hello
 ```
 
 
