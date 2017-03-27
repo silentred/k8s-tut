@@ -33,7 +33,7 @@
 2. 登录三台机器，安装必要组件.
 	```
 	yum clean
-	yum update
+	yum update -y
 	cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 	[kubernetes]
 	name=Kubernetes
@@ -53,8 +53,19 @@
 3. 选择一台作为master, 运行
 	```
 	kubeadm init
+
+	# 输出
+	Your Kubernetes master has initialized successfully!
+
+	You should now deploy a pod network to the cluster.
+	Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+		http://kubernetes.io/docs/admin/addons/
+
+	You can now join any number of machines by running the following on each node:
+
+	kubeadm join --token=e344fa.e007ce406eb41f07 104.236.166.119
 	```
-	完成后会看到提示: `kubeadm join --token=311971.7260777a25d70ac8 192.168.1.100`
+	完成后会看到提示: `kubeadm join --token=311971.7260777a25d70ac8 104.236.166.119`
 4. 在其他两台机器上分别运行以上提示的命令
 5. 在 master 上查看状态, `kubectl get nodes`, 如果看到一共有2个node，一个master， 则表示集群创建成功。
 
@@ -69,9 +80,14 @@ kubectl get pods --all-namespaces | grep dns
 这里有比较多的选择，我使用了 calico，因为性能比较好，支持一键部署。 这里有一篇对比容器网络的文章，优缺点介绍比较全面， [Battlefield: Calico, Flannel, Weave and Docker Overlay Network](http://chunqi.li/2015/11/15/Battlefield-Calico-Flannel-Weave-and-Docker-Overlay-Network/)
 
 配置文件在cni目录下，或者可以直接在master运行： 
-`kubectl apply -f http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/kubeadm/calico.yaml`
+`kubectl create -f http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/kubeadm/calico.yaml`
 
 再次查看 dns 服务是否运行成功吧。
+
+```
+# 按需安装 git 和 dig
+yum install -y bind-utils git 
+```
 
 ## 监控
 
@@ -79,7 +95,7 @@ kubectl get pods --all-namespaces | grep dns
 首先确定两台node的name, 通过 `kubectl get nodes`来查看，之后挑选其中一台作为前端机器(frontend).
 
 ```
-kubectl label node centos-2gb-sfo2-node1 role=frontend
+kubectl label node centos-2gb-sfo1-03 role=frontend
 ```
 这里把centos-2gb-sfo2-node1换成你的 node name
 

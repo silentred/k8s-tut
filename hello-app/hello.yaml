@@ -13,7 +13,7 @@ spec:
       - path: /v1
         backend:
           serviceName: hello
-          servicePort: 9090
+          servicePort: 8080
 
 ---
 
@@ -28,7 +28,7 @@ metadata:
   name: hello
 spec:
   ports:
-  - port: 9090
+  - port: 8080
   selector:
     run: hello
 
@@ -51,9 +51,9 @@ spec:
         # livenessProbe:
         #   httpGet:
         #     path: /healthz
-        #     port: 9090
+        #     port: 8080
         #   initialDelaySeconds: 3
         #   periodSeconds: 3
         ports:
-        - containerPort: 9090
+        - containerPort: 8080
 
