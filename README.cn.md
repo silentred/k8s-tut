@@ -110,7 +110,7 @@ kubectl create -f prometheus.deploy.yaml
 
 接下来打开 http://front-end-ip:30900 就能看到 prometheus 的界面
 
-![promethues](resource/prometheus.dash.png)
+![prometheus dashboard](resource/prometheus.dash.png)
 
 ### Grafana
 
