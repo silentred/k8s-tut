@@ -3,6 +3,6 @@ FROM alpine
 RUN mkdir /data
 ADD ./hello /data
 WORKDIR /data
-EXPOSE 9090
+EXPOSE 8080
 
 ENTRYPOINT ["/data/hello"]  
