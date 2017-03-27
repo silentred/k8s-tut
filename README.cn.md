@@ -110,6 +110,8 @@ kubectl create -f prometheus.deploy.yaml
 
 接下来打开 http://front-end-ip:30900 就能看到 prometheus 的界面
 
+![promethues](resource/prometheus.dash.png)
+
 ### Grafana
 
 ```
@@ -122,7 +124,11 @@ kubectl create -f grafana.deploy.yaml
 	http://promethues:9090
 	因为有kube-dns，所以这样就能访问 pod 中的 service
 
+	![add data source](resource/grafana.dash.png)
+
 2. 添加模板，内容为  grafana.config.k8s.json, 这个模板是针对 k8s 集群的仪表模板，添加时选择对应的 Data Source，然后就能看到效果。
+	![add template](resource/grafana.import.png)
+	![cluster](resource/grafana.k8s-cluster.png)
 
 ## 网关
 
@@ -167,6 +173,10 @@ kubectl create -f hello.yaml
 ```
 
 接着去 gateway 和 prometheus 的 dashboard 看下，会发现服务已经被发现;
+
+![gateway](resource/hello.gateway.png)
+![prometheus](resource/hello.prometheus.png)
+
 再测试一下通过gateway是否能访问到 hello-app 这个服务:
 
 ```
