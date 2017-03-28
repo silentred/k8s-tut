@@ -45,7 +45,6 @@
 		https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 	EOF
 	setenforce 0
-	yum makecache
 	yum install -y docker kubelet kubeadm kubectl kubernetes-cni
 	systemctl enable docker && systemctl start docker
 	systemctl enable kubelet && systemctl start kubelet

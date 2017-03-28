@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM alpine 
 
 RUN mkdir -p /data
 ADD hello /data
