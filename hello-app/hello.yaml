@@ -56,4 +56,12 @@ spec:
         #   periodSeconds: 3
         ports:
         - containerPort: 8080
+        volumeMounts:
+        - mountPath: /tmp
+          name: log-volume
+      volumes:
+      - name: log-volume
+        hostPath:
+        # directory location on host
+        path: /tmp/hello-log
 
