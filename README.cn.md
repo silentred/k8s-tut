@@ -19,13 +19,17 @@
 3. CNI网络问题，主要是 CNI 网段和云上的局域网网段冲突了，基础知识缺失导致
 4. K8S 的证书和验证方式不清楚
 
-可以参考我之前的[博文]()，即便是完全熟悉部署流程，不写脚本的情况下，如果纯手动 setup 或者 tear down 一个集群，都是比较耗时间的。
+本文相关代码位于[github](https://github.com/silentred/k8s-tut), 欢迎star。
+
+可以参考我之前的[博文](https://segmentfault.com/a/1190000007673785)，即便是完全熟悉部署流程，不写脚本的情况下，如果纯手动 setup 或者 tear down 一个集群，都是比较耗时间的。
 
 直到，发现了这个工具 kubeadm, 世界美好了。
 
 这个工具对操作系统有限制， ubuntu 16.4 或 centos 7 以上。其实当初也看到了这个工具， 不过 因为系统限制，并且kubeadm还在alpha版本，又想手动撸一遍部署过程，所以没直接采用。 不过 kubeadm 不建议在生产环境中使用，在 官方文档中的 limitation 中有详细解释.
 
 [文档](https://kubernetes.io/docs/getting-started-guides/kubeadm/) 中第一点就说了， kubeadm部署的是 single master，意味着不是高可用，谨慎使用。 但是作为演示实例再合适不过。
+
+小插曲: 因为最近发布的 k8s 1.6 的 kubeadm 有一个bug，导致用以下步骤安装会有问题，为此社区里有人提了一个patch, 步骤有些多，我写在本文最后了。
 
 开始部署步骤:
 
@@ -144,7 +148,7 @@ traefik 可以监听 etcd 中注册的 ingress 的变化，根据 ingress 资源
 官方有推荐的Log系统: cAdvisor 和 Heapster. 
 我比较偏爱 ELK, 主要是生态比较好。有两种方式应用：
 
-1. 第一种是每个Pod都多加一个 sidecar - Filebeat， 在每个后端服务配置文件中指定本地log的路径，在filebeat的配置中指定这个路径，实现日志收集
+1. 第一种是每个Pod都多加一个 sidecar - Filebeat， 在每个后端服务配置文件中指定本地log的路径(利用 k8s 的 hostPath 这个volume)，在filebeat的配置中指定这个路径，实现日志收集
 
 2. 还有一种是Filebeat作为 DaemonSet 运行在每台机器, 这样每台机器只有一个 filebeat 运行，监听一个指定目录；后端服务约定好log都写入这个目录的子目录中，这样也能达到收集效果。
 
@@ -159,7 +163,7 @@ traefik 可以监听 etcd 中注册的 ingress 的变化，根据 ingress 资源
 1. /metrics 返回 prometheus 抓取的数据格式
 2. / 其他Path，返回一个随机id和URI
 
-log 日志输入 /tmp/hello-app.log ;
+log 日志输入 /tmp/hello-log/hello-app.log;
 
 想要达到的效果是：
 1. 配置文件中配好路由，自动注册到 gateway
@@ -184,4 +188,18 @@ curl http://front-end-ip:30087/v1/hello -H 'Host: www.hello.local'
 ID:5577006791947779410 path:/hello
 ```
 
+## 编译安装 kubeadm
 
+1. 下载 kubernetes 项目， checkout v1.6.0, 必须是这个tag
+2. `cherry-pick 89557110ed4693a7d23e515e738ced266e099365`
+3. `KUBE_BUILD_PLATFORMS=linux/amd64 hack/make-rules/build.sh cmd/kubeadm`
+4. 把生成的 _output 文件打包，放入服务器上
+5. 按照本文第一部分的步骤 yum 安装 docker, kubelet
+6. 编辑文件 `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` 添加 参数`--cgroup-driver=systemd`
+7. `sudo systemctl daemon-reload && sudo systemctl restart kubelet.service`
+8. `kubeadm init` 能完成，但是 node 状态是 not-ready，因为 cni 没有配置.
+9. 复制 `/etc/kubernetes/admin.conf` 文件到 `~/.kube/config` 然后 执行 `kubectl get nodes`才可以，因为新版的apiserver启动时，把 insecure-port 禁用了，8080端口不再可用.
+
+## Alpine Linux
+
+这次还遇到一个问题， alpine的docker镜像使用不顺利，ubuntu, centos下编译的文件在 alpine 下无法运行， 记得之前还运行成功过，这次得仔细找找原因。

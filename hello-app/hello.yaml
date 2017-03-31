@@ -62,6 +62,6 @@ spec:
       volumes:
       - name: log-volume
         hostPath:
-        # directory location on host
-        path: /tmp/hello-log
+          # directory location on host
+          path: /tmp/hello-log
 
