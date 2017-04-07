@@ -74,7 +74,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 30090
+  - nodePort: 30090
     targetPort: 9090
   selector:
     app: kubernetes-dashboard
