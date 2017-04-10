@@ -203,3 +203,45 @@ ID:5577006791947779410 path:/hello
 ## Alpine Linux
 
 这次还遇到一个问题， alpine的docker镜像使用不顺利，ubuntu, centos下编译的文件在 alpine 下无法运行， 记得之前还运行成功过，这次得仔细找找原因。
+
+## 实验内容
+
+- 水平扩展
+
+```
+kubectl scale deployments/hello --replicas=2 --record
+kubectl get pods -o wide
+```
+
+- 升级一个项目 (rolling update)
+```
+方法一：
+kubectl set image deployments/hello hello=silentred/hello-app:v2 --record
+
+方法二：
+kubectl edit deployment/hello
+修改 image
+
+方法三：
+修改配置文件
+kubectl apply -f hello.yaml --record
+```
+
+- 金丝雀部署
+```
+kubectl set image deployments/hello hello=silentred/hello-app:v3; kubectl rollout pause deployments/hello
+kubectl rollout status deployments/hello
+kubectl rollout resume deployments/hello
+```
+
+- 回滚 (rollback deployment)
+```
+kubectl rollout undo deployments/hello
+```
+
+- 故障恢复 (pod / node)
+
+```
+docker stop contaider-id
+docker ps
+```

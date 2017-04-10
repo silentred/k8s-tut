@@ -1,19 +1,20 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
-	"math/rand"
+	"crypto/rand"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (
-	id int
+	id int32
 
 	reqCount = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "req_count",
@@ -27,7 +28,7 @@ var (
 )
 
 func main() {
-	id = rand.Int()
+	binary.Read(rand.Reader, binary.LittleEndian, &id)
 
 	// log
 	logFile, err := os.Create("/tmp/hello-app.log")
