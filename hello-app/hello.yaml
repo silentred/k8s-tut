@@ -47,7 +47,7 @@ spec:
     spec:
       containers:
       - name: hello
-        image: silentred/hello-app:latest
+        image: silentred/hello-app:v2
         # livenessProbe:
         #   httpGet:
         #     path: /healthz

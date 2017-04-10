@@ -216,7 +216,8 @@ kubectl get pods -o wide
 - 升级一个项目 (rolling update)
 ```
 方法一：
-kubectl set image deployments/hello hello=silentred/hello-app:v2 --record
+kubectl set image deployments/hello hello=silentred/hello-app:v3 --record
+kubectl rollout history deployments/hello // 查看历史
 
 方法二：
 kubectl edit deployment/hello
@@ -229,9 +230,12 @@ kubectl apply -f hello.yaml --record
 
 - 金丝雀部署
 ```
+// 不好用了
 kubectl set image deployments/hello hello=silentred/hello-app:v3; kubectl rollout pause deployments/hello
 kubectl rollout status deployments/hello
 kubectl rollout resume deployments/hello
+
+http://vishh.github.io/docs/concepts/cluster-administration/manage-deployment/#canary-deployments
 ```
 
 - 回滚 (rollback deployment)
