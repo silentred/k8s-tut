@@ -215,7 +215,11 @@ kubectl get pods -o wide
 
 - 自动水平扩展
 ```
-kubectl autoscale deployment hello --cpu-percent=15 --min=1 --max=2
+kubectl autoscale deployment hello --cpu-percent=10 --min=1 --max=2
+
+# open another termial
+kubectl get hpa
+watch kubectl get pods
 
 while true; do wget -q -O- http://cluster-ip:8080; done
 ```
