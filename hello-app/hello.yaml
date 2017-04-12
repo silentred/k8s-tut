@@ -48,6 +48,13 @@ spec:
       containers:
       - name: hello
         image: silentred/hello-app:v2
+        resources:
+          requests:
+            memory: "10Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
         # livenessProbe:
         #   httpGet:
         #     path: /healthz
