@@ -36,23 +36,41 @@
 1. 在 Digital Ocean 中开三台机器, centos 7，建议2C2G，按小时计费用不了多少钱，用完就销毁。 如果还没有注册账号，并且觉得本文对你有帮助，可以用我的 referral link 注册，可以得到 10美金, [链接](https://m.do.co/c/821db079aed2)
 2. 登录三台机器，安装必要组件.
 	```
-	yum clean
-	yum update -y
-	cat <<EOF > /etc/yum.repos.d/kubernetes.repo
-	[kubernetes]
-	name=Kubernetes
-	baseurl=http://yum.kubernetes.io/repos/kubernetes-el7-x86_64
-	enabled=1
-	gpgcheck=1
-	repo_gpgcheck=1
-	gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
-		https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-	EOF
-	setenforce 0
-	yum install -y docker kubelet kubeadm kubectl kubernetes-cni
-	systemctl enable docker && systemctl start docker
-	systemctl enable kubelet && systemctl start kubelet
+# centos 7
+yum clean
+yum update -y
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=http://yum.kubernetes.io/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+	https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+setenforce 0
+yum install -y docker kubelet kubeadm kubectl kubernetes-cni
+systemctl enable docker && systemctl start docker
+systemctl enable kubelet && systemctl start kubelet
+
+# Ubuntu 16.04
+apt-get update && apt-get install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update
+# Install docker if you don't have it already.
+apt-get install -y docker-engine
+apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+
+# vim /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# add --authentication-token-webhook argument for kubelet
+# git clone https://github.com/silentred/k8s-tut
 	```
+
+
 3. 选择一台作为master, 运行
 	```
 	kubeadm init
@@ -83,7 +101,7 @@ kubectl get pods --all-namespaces | grep dns
 这里有比较多的选择，我使用了 calico，因为性能比较好，支持一键部署。 这里有一篇对比容器网络的文章，优缺点介绍比较全面， [Battlefield: Calico, Flannel, Weave and Docker Overlay Network](http://chunqi.li/2015/11/15/Battlefield-Calico-Flannel-Weave-and-Docker-Overlay-Network/)
 
 配置文件在cni目录下，或者可以直接在master运行： 
-`kubectl create -f http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/kubeadm/calico.yaml`
+`kubectl apply -f http://docs.projectcalico.org/v2.1/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml`
 
 再次查看 dns 服务是否运行成功吧。
 
